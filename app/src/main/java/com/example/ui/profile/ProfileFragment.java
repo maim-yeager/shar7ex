@@ -85,7 +85,7 @@ public class ProfileFragment extends Fragment {
                 .get(AggregateSource.SERVER)
                 .addOnSuccessListener(snap -> {
                     if (!isAdded()) return;
-                    Number sum = snap.get(com.google.firebase.firestore.AggregateField.sum("originalSizeBytes"));
+                    Number sum = (Number) snap.get(com.google.firebase.firestore.AggregateField.sum("originalSizeBytes"));
                     tvStatStorage.setText(FileUtils.formatFileSize(sum != null ? sum.longValue() : 0));
                 });
     }

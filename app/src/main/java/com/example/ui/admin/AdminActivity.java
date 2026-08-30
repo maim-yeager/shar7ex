@@ -99,7 +99,7 @@ public class AdminActivity extends AppCompatActivity {
                 .aggregate(com.google.firebase.firestore.AggregateField.sum("originalSizeBytes"))
                 .get(com.google.firebase.firestore.AggregateSource.SERVER)
                 .addOnSuccessListener(snap -> {
-                    Number sum = snap.get(com.google.firebase.firestore.AggregateField.sum("originalSizeBytes"));
+                    Number sum = (Number) snap.get(com.google.firebase.firestore.AggregateField.sum("originalSizeBytes"));
                     tvAdminTotalStorage.setText(FileUtils.formatFileSize(sum != null ? sum.longValue() : 0));
                 })
                 .addOnFailureListener(e -> tvAdminTotalStorage.setText("N/A"));
