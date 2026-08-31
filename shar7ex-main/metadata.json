@@ -1,6 +1,0 @@
-{
-  "name": "M.SHAREX",
-  "description": "High-Quality Original Resolution Photo & Video Sharing App created by NH MAIM",
-  "requestFramePermissions": [],
-  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
-}
