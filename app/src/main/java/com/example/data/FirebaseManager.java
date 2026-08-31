@@ -8,12 +8,12 @@ import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.FirebaseFirestoreSettings;
 import com.google.firebase.firestore.Query;
-import com.google.firebase.storage.FirebaseStorage;
 import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Central access point for Firebase Auth / Firestore / Storage.
+ * Central access point for Firebase Auth / Firestore.
+ * (Cloud Storage is intentionally not used - see com.example.cloud.CloudinaryUploader.)
  * The signed-in user is always the REAL FirebaseAuth user - there is no
  * local fake/demo account. Profile data is mirrored to Firestore under
  * users/{uid} so it is real and shared across devices.
@@ -26,8 +26,8 @@ public class FirebaseManager {
     private final Context context;
     private FirebaseAuth auth;
     private FirebaseFirestore firestore;
-    private FirebaseStorage storage;
     private User currentUserCache;
+    private boolean firebaseAvailable = false;
 
     public interface UserCallback {
         void onResult(@Nullable User user);
@@ -50,26 +50,45 @@ public class FirebaseManager {
     }
 
     private void initFirebase() {
-        auth = FirebaseAuth.getInstance();
-        firestore = FirebaseFirestore.getInstance();
-        storage = FirebaseStorage.getInstance();
+        try {
+            // If google-services.json was missing/placeholder at build time, no FirebaseApp
+            // exists yet in this process. Guard instead of letting FirebaseAuth.getInstance()
+            // throw and crash the whole app on launch.
+            if (com.google.firebase.FirebaseApp.getApps(context).isEmpty()) {
+                com.google.firebase.FirebaseApp.initializeApp(context);
+            }
+            if (com.google.firebase.FirebaseApp.getApps(context).isEmpty()) {
+                firebaseAvailable = false;
+                return;
+            }
 
-        FirebaseFirestoreSettings settings = new FirebaseFirestoreSettings.Builder()
-                .setPersistenceEnabled(true)
-                .build();
-        firestore.setFirestoreSettings(settings);
+            auth = FirebaseAuth.getInstance();
+            firestore = FirebaseFirestore.getInstance();
+
+            FirebaseFirestoreSettings settings = new FirebaseFirestoreSettings.Builder()
+                    .setPersistenceEnabled(true)
+                    .build();
+            firestore.setFirestoreSettings(settings);
+            firebaseAvailable = true;
+        } catch (Exception e) {
+            firebaseAvailable = false;
+        }
+    }
+
+    /** True once a real Firebase project (app/google-services.json) is actually configured. */
+    public boolean isFirebaseAvailable() {
+        return firebaseAvailable;
     }
 
     public FirebaseAuth getAuth() { return auth; }
     public FirebaseFirestore getFirestore() { return firestore; }
-    public FirebaseStorage getStorage() { return storage; }
-
     public boolean isLoggedIn() {
-        return auth.getCurrentUser() != null;
+        return firebaseAvailable && auth != null && auth.getCurrentUser() != null;
     }
 
     @Nullable
     public String getCurrentUid() {
+        if (!firebaseAvailable || auth == null) return null;
         FirebaseUser fu = auth.getCurrentUser();
         return fu != null ? fu.getUid() : null;
     }

@@ -40,7 +40,17 @@ jobs:
       - name: Check for google-services.json
         run: |
           if [ ! -f app/google-services.json ]; then
-            echo "::warning::No app/google-services.json found - the build will still succeed, but Firebase features (auth, chat, transfers, storage) won't work at runtime until you add your real one. See README for setup steps."
+            echo "::warning::No app/google-services.json found - the build will still succeed, but Firebase features (auth, chat, transfers) won't work at runtime until you add your real one. See README for setup steps."
+          fi
+
+      - name: Create .env for Cloudinary
+        run: |
+          if [ -n "${{ secrets.CLOUDINARY_CLOUD_NAME }}" ] && [ -n "${{ secrets.CLOUDINARY_UPLOAD_PRESET }}" ]; then
+            echo "CLOUDINARY_CLOUD_NAME=${{ secrets.CLOUDINARY_CLOUD_NAME }}" > .env
+            echo "CLOUDINARY_UPLOAD_PRESET=${{ secrets.CLOUDINARY_UPLOAD_PRESET }}" >> .env
+            echo "Using your Cloudinary repo secrets - uploads will work in this build."
+          else
+            echo "::warning::No CLOUDINARY_CLOUD_NAME/CLOUDINARY_UPLOAD_PRESET repo secrets set - the build will still succeed, but sending files will show a 'not configured' error until you add them. See README."
           fi
 
       - name: Build debug APK

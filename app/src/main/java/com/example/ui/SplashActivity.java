@@ -39,6 +39,18 @@ public class SplashActivity extends AppCompatActivity {
 
     private void proceed() {
         FirebaseManager manager = FirebaseManager.getInstance(this);
+
+        if (!manager.isFirebaseAvailable()) {
+            new android.app.AlertDialog.Builder(this)
+                    .setTitle("Firebase not configured")
+                    .setMessage("app/google-services.json is missing or is a placeholder, so Firebase can't start. " +
+                            "Add your real google-services.json from the Firebase Console, rebuild, and reinstall. See the README for setup steps.")
+                    .setCancelable(false)
+                    .setPositiveButton("Close App", (dialog, which) -> finishAffinity())
+                    .show();
+            return;
+        }
+
         if (manager.isLoggedIn()) {
             // Hydrate the real Firestore profile before entering the app so every
             // screen that reads FirebaseManager.getCurrentUser() has real data.
