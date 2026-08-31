@@ -1,7 +1,7 @@
 package com.example.cloud;
 
 import android.content.Context;
-import com.example.R;
+import com.example.BuildConfig;
 import java.io.IOException;
 import java.io.InputStream;
 import okhttp3.Call;
@@ -33,8 +33,8 @@ public class CloudinaryUploader {
 
     /** Returns null if the app isn't configured yet (see .env.example / README). */
     public static boolean isConfigured(Context context) {
-        String cloudName = safeString(context, R.string.CLOUDINARY_CLOUD_NAME);
-        String preset = safeString(context, R.string.CLOUDINARY_UPLOAD_PRESET);
+        String cloudName = safeString(BuildConfig.CLOUDINARY_CLOUD_NAME);
+        String preset = safeString(BuildConfig.CLOUDINARY_UPLOAD_PRESET);
         return !cloudName.isEmpty() && !preset.isEmpty();
     }
 
@@ -44,8 +44,8 @@ public class CloudinaryUploader {
      * @param knownLength   total bytes if known (-1 for unknown/chunked upload)
      */
     public static Call upload(Context context, InputStream stream, long knownLength, String fileName, String mimeType, UploadCallback callback) {
-        String cloudName = safeString(context, R.string.CLOUDINARY_CLOUD_NAME);
-        String preset = safeString(context, R.string.CLOUDINARY_UPLOAD_PRESET);
+        String cloudName = safeString(BuildConfig.CLOUDINARY_CLOUD_NAME);
+        String preset = safeString(BuildConfig.CLOUDINARY_UPLOAD_PRESET);
 
         if (cloudName.isEmpty() || preset.isEmpty()) {
             callback.onError("Cloudinary isn't configured yet - add CLOUDINARY_CLOUD_NAME and CLOUDINARY_UPLOAD_PRESET to your .env file (see README).");
@@ -97,13 +97,8 @@ public class CloudinaryUploader {
         return call;
     }
 
-    private static String safeString(Context context, int resId) {
-        try {
-            String value = context.getString(resId);
-            return value != null ? value.trim() : "";
-        } catch (Exception e) {
-            return "";
-        }
+    private static String safeString(String value) {
+        return value != null ? value.trim() : "";
     }
 
     /** Streams the file straight from its InputStream into the HTTP request body, reporting real progress. */
